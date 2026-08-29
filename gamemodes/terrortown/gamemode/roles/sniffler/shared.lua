@@ -24,6 +24,7 @@ SNIFFLER_SCANNER_WAITING   = 4
 CreateConVar("ttt_sniffler_scanner_time", "15", FCVAR_REPLICATED, "The amount of time (in seconds) the sniffler's scanner takes to use", 0, 60)
 CreateConVar("ttt_sniffler_rescan_time", "30", FCVAR_REPLICATED, "The amount of time (in seconds) before the sniffler can scan a player again", 0, 60)
 local sniffler_requires_scanner = CreateConVar("ttt_sniffler_requires_scanner", "0", FCVAR_REPLICATED)
+local sniffler_is_innocent = CreateConVar("ttt_sniffler_is_innocent", "0", FCVAR_REPLICATED, "Whether the sniffler should be treated as a special innocent", 0, 1)
 
 ROLE_CONVARS[ROLE_SNIFFLER] = {
     {
@@ -68,4 +69,13 @@ AddHook("TTTUpdateRoleState", "Sniffler_TTTUpdateRoleState", function()
     else
         table.Empty(sniffler_scanner.InLoadoutFor)
     end
+end)
+
+-------------------
+-- ROLE FEATURES --
+-------------------
+
+AddHook("TTTUpdateRoleState", "Sniffler_TTTUpdateRoleState", function()
+    local is_innocent = sniffler_is_innocent:GetBool()
+    DETECTIVE_ROLES[ROLE_SNIFFLER] = not is_innocent
 end)
