@@ -41,7 +41,7 @@ local sniffler_scanner_time     = GetConVar("ttt_sniffler_scanner_time")
 local sniffler_requires_scanner = GetConVar("ttt_sniffler_requires_scanner")
 
 local sniffler_show_scan_radius  = CreateClientConVar("ttt_sniffler_show_scan_radius", "0", true, false, "Whether the scan radius circle should show", 0, 1)
-local sniffler_lootrole_distance = CreateConVar("ttt_sniffler_lootrole_distance", "300", FCVAR_NONE, "The distance within which the sniffler will detect loot roles", 100, 10000)
+local sniffler_lootrole_distance = CreateConVar("ttt_sniffler_lootrole_distance", "1000", FCVAR_NONE, "The distance within which the sniffler will detect loot roles", 100, 10000)
 
 local function Sniffler_TTTSettingsRolesTabSections(role, parentForm)
     if role ~= ROLE_SNIFFLER then return end
