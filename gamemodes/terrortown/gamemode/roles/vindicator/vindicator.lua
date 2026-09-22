@@ -1,15 +1,15 @@
 AddCSLuaFile()
 
-local hook = hook
-local math = math
-local net = net
+local hook   = hook
+local math   = math
+local net    = net
 local player = player
-local table = table
-local timer = timer
+local table  = table
+local timer  = timer
 
-local AddHook = hook.Add
+local AddHook        = hook.Add
 local PlayerIterator = player.Iterator
-local TableInsert = table.insert
+local TableInsert    = table.insert
 
 util.AddNetworkString("TTT_VindicatorTeamChange")
 util.AddNetworkString("TTT_VindicatorActive")
@@ -20,16 +20,17 @@ util.AddNetworkString("TTT_VindicatorFail")
 -- CONVARS --
 -------------
 
-local vindicator_respawn_delay = CreateConVar("ttt_vindicator_respawn_delay", "5", FCVAR_NONE, "Delay between the vindicator dying and respawning in seconds", 0, 30)
-local vindicator_respawn_health = CreateConVar("ttt_vindicator_respawn_health", "100", FCVAR_NONE, "The amount of health a vindicator will respawn with", 1, 200)
+local vindicator_respawn_delay     = CreateConVar("ttt_vindicator_respawn_delay", "5", FCVAR_NONE, "Delay between the vindicator dying and respawning in seconds", 0, 30)
+local vindicator_respawn_health    = CreateConVar("ttt_vindicator_respawn_health", "100", FCVAR_NONE, "The amount of health a vindicator will respawn with", 1, 200)
 local vindicator_announcement_mode = CreateConVar("ttt_vindicator_announcement_mode", "1", FCVAR_NONE, "Who is notified when the vindicator respawns", 0, 2)
-local vindicator_prevent_revival = CreateConVar("ttt_vindicator_prevent_revival", "0", FCVAR_NONE)
+local vindicator_prevent_revival   = CreateConVar("ttt_vindicator_prevent_revival", "0", FCVAR_NONE)
 
 local vindicator_target_suicide_success = GetConVar("ttt_vindicator_target_suicide_success")
-local vindicator_kill_on_fail = GetConVar("ttt_vindicator_kill_on_fail")
-local vindicator_kill_on_success = GetConVar("ttt_vindicator_kill_on_success")
-local vindicator_reset_on_success = GetConVar("ttt_vindicator_reset_on_success")
-local vindicator_reset_win_on_success = GetConVar("ttt_vindicator_reset_win_on_success")
+local vindicator_kill_on_fail           = GetConVar("ttt_vindicator_kill_on_fail")
+local vindicator_kill_on_success        = GetConVar("ttt_vindicator_kill_on_success")
+local vindicator_reset_on_success       = GetConVar("ttt_vindicator_reset_on_success")
+local vindicator_reset_win_on_success   = GetConVar("ttt_vindicator_reset_win_on_success")
+local vindicator_target_only_damage     = GetConVar("ttt_vindicator_target_only_damage")
 
 -------------------
 -- ROLE FEATURES --
@@ -88,6 +89,49 @@ local function ActivateVindicator(vindicator, target)
                 if ply ~= vindicator and ply ~= target then
                     ply:PrintMessage(HUD_PRINTTALK, roleStr .. " (" .. vindicator:Nick() .. ") has respawned and is hunting down " .. target:Nick() .. "!")
                 end
+            end
+        end
+    end
+end
+
+local function IsWorkingVindicator(ply)
+    return ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and not ply:IsRoleAbilityDisabled()
+end
+
+local function Vindicator_EntityTakeDamage(victim, dmg)
+    if not vindicator_target_only_damage:GetBool() then return end
+
+    local attacker = dmg:GetAttacker()
+    if not (IsValid(victim) and victim:IsPlayer() and IsValid(attacker) and attacker:IsPlayer()) then return end
+
+    -- Vindicator can only damage their target
+    if IsWorkingVindicator(attacker) then
+        if attacker:GetNWString("VindicatorTarget", "") ~= victim:SteamID64() then
+            return true
+        end
+    end
+
+    -- Vindicator can only be damaged by their target
+    if IsWorkingVindicator(victim) then
+        if victim:GetNWString("VindicatorTarget", "") ~= attacker:SteamID64() then
+            return true
+        end
+    end
+
+    -- Vindicator target can only damage their Vindicator
+    for _, ply in PlayerIterator() do
+        if IsWorkingVindicator(ply) and ply:GetNWString("VindicatorTarget", "") == attacker:SteamID64() then
+            if victim ~= ply then
+                return true
+            end
+        end
+    end
+
+    -- Vindicator target can only be damaged by their Vindicator
+    for _, ply in PlayerIterator() do
+        if IsWorkingVindicator(ply) and ply:GetNWString("VindicatorTarget", "") == victim:SteamID64() then
+            if attacker ~= ply then
+                return true
             end
         end
     end
@@ -360,11 +404,12 @@ end)
 ------------------
 
 ROLE_REGISTERED_HOOKS[ROLE_VINDICATOR] = {
-    ["PlayerDeath"] = Vindicator_PlayerDeath,
-    ["PlayerDisconnected"] = Vindicator_PlayerDisconnected,
-    ["TTTCheckForWin"] = Vindicator_TTTCheckForWin,
-    ["TTTDeathNotifyOverride"] = Vindicator_TTTDeathNotifyOverride,
-    ["TTTPrintResultMessage"] = Vindicator_TTTPrintResultMessage,
+    ["PlayerDeath"]             = Vindicator_PlayerDeath,
+    ["EntityTakeDamage"]        = Vindicator_EntityTakeDamage,
+    ["PlayerDisconnected"]      = Vindicator_PlayerDisconnected,
+    ["TTTCheckForWin"]          = Vindicator_TTTCheckForWin,
+    ["TTTDeathNotifyOverride"]  = Vindicator_TTTDeathNotifyOverride,
+    ["TTTPrintResultMessage"]   = Vindicator_TTTPrintResultMessage,
     ["TTTStopPlayerRespawning"] = Vindicator_TTTStopPlayerRespawning,
-    ["TTTWinCheckBlocks"] = Vindicator_TTTWinCheckBlocks
+    ["TTTWinCheckBlocks"]       = Vindicator_TTTWinCheckBlocks
 }
