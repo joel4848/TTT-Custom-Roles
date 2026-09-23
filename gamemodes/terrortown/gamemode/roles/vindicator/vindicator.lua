@@ -95,7 +95,7 @@ local function ActivateVindicator(vindicator, target)
 end
 
 local function IsWorkingVindicator(ply)
-    return ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and not ply:IsRoleAbilityDisabled()
+    return ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and ply:IsActive() and not ply:IsRoleAbilityDisabled()
 end
 
 local function Vindicator_EntityTakeDamage(victim, dmg)
