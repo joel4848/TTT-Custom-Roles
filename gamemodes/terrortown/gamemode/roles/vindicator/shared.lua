@@ -93,7 +93,7 @@ ROLE_CONVARS[ROLE_VINDICATOR] = {
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
-        cvar = "ttt_vindicator_reset_win_on_success",
+        cvar = "ttt_vindicator_reset_on_success",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
