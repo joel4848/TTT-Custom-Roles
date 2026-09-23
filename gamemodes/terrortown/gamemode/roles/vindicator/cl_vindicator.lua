@@ -59,9 +59,18 @@ local function Vindicator_TTTTargetIDPlayerTargetIcon(ply, cli, showJester)
     end
 end
 
-local function Vindicator_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
-    if IsPlayer(ent) and cli:IsVindicator() and ent:SteamID64() == cli:GetNWString("VindicatorTarget", "") and not cli:IsRoleAbilityDisabled() then
+local function Vindicator_TTTTargetIDPlayerText(ent, cli, text, col)
+    if not IsPlayer(ent) then return end
+    if cli:IsVindicator() and ent:SteamID64() == cli:GetNWString("VindicatorTarget", "") and not cli:IsRoleAbilityDisabled() then
         return LANG.GetTranslation("target_current_target"), ROLE_COLORS_RADAR[ROLE_VINDICATOR]
+    end
+
+    if vindicator_target_only_damage:GetBool() and ent.Vindicator_InvEmitter then
+        if not text then
+            return "INVULNERABLE", COLOR_CYAN
+        else
+            return text, col, "INVULNERABLE", COLOR_CYAN
+        end
     end
 end
 
@@ -174,11 +183,11 @@ end
 -------------------------------
 
 local function IsWorkingVindicator(ply)
-    return ply:IsActiveRole(ROLE_VINDICATOR) and ply:IsRoleActive() and not ply:IsRoleAbilityDisabled()
+    return ply:IsActiveVindicator() and ply:IsRoleActive() and not ply:IsRoleAbilityDisabled()
 end
 
 local function ShouldEmit(ply)
-    if ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and ply:IsActive() and ply:GetNWString("VindicatorTarget", "") ~= client:SteamID64() and not ply:IsRoleAbilityDisabled() then
+    if IsWorkingVindicator(ply) and ply:GetNWString("VindicatorTarget", "") ~= client:SteamID64() then
         return true
     end
 
