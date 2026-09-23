@@ -20,6 +20,7 @@ local vindicator_kill_on_fail = GetConVar("ttt_vindicator_kill_on_fail")
 local vindicator_kill_on_success = GetConVar("ttt_vindicator_kill_on_success")
 local vindicator_reset_on_success = GetConVar("ttt_vindicator_reset_on_success")
 local vindicator_reset_win_on_success = GetConVar("ttt_vindicator_reset_win_on_success")
+local vindicator_target_only_damage = GetConVar("ttt_vindicator_target_only_damage")
 
 ------------------
 -- TRANSLATIONS --
@@ -191,6 +192,8 @@ local function ShouldEmit(ply)
 end
 
 local function Vindicator_InvulnerableEmitter_Think()
+    if not vindicator_target_only_damage:GetBool() then return end
+
     client = LocalPlayer()
 
     for _, v in PlayerIterator() do
