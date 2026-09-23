@@ -174,16 +174,16 @@ end
 -------------------------------
 
 local function IsWorkingVindicator(ply)
-    return ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and ply:IsActive() and not ply:IsRoleAbilityDisabled()
+    return ply:IsActiveRole(ROLE_VINDICATOR) and ply:IsRoleActive() and not ply:IsRoleAbilityDisabled()
 end
 
 local function ShouldEmit(ply)
-    if ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and ply:IsActive() and not ply:IsRoleAbilityDisabled() and ply:GetNWString("VindicatorTarget", "") ~= client:SteamID64() then
+    if ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and ply:IsActive() and ply:GetNWString("VindicatorTarget", "") ~= client:SteamID64() and not ply:IsRoleAbilityDisabled() then
         return true
     end
 
     for _, v in PlayerIterator() do
-        if v ~= client and IsWorkingVindicator(v) and v:GetNWString("VindicatorTarget", "") == ply:SteamID64()then
+        if v ~= client and IsWorkingVindicator(v) and v:GetNWString("VindicatorTarget", "") == ply:SteamID64() then
             return true
         end
     end
@@ -194,36 +194,38 @@ end
 local function Vindicator_InvulnerableEmitter_Think()
     if not vindicator_target_only_damage:GetBool() then return end
 
-    client = LocalPlayer()
+    if not client or not IsPlayer(client) then
+        client = LocalPlayer()
+    end
 
     for _, v in PlayerIterator() do
-        if v:Alive() and not v:IsSpec() then
-            if v ~= client and ShouldEmit(v) then
-                if not v.InvulnerableEmitter then v.InvulnerableEmitter = ParticleEmitter(v:GetPos()) end
-                if not v.InvulnerableNextPart then v.InvulnerableNextPart = CurTime() end
-                local pos = v:GetPos()
-                -- Use DistToSqr as it's more efficient and this is called very frequently
-                -- 9000000 = 3000^2
-                if v.InvulnerableNextPart < CurTime() and client:GetPos():DistToSqr(pos) <= 9000000 then
-                    v.InvulnerableEmitter:SetPos(pos)
-                    v.InvulnerableNextPart = CurTime() + MathRand(0.0005, 0.02)
-                    local vec = Vector(MathRand(-8, 8), MathRand(-8, 8), MathRand(-25, 25))
-                    local particle = v.InvulnerableEmitter:Add("particle/wisp.vmt", v:LocalToWorld(vec + Vector(0, 0, 35)))
-                    particle:SetVelocity(vec:GetNormalized() * 50)
-                    particle:SetDieTime(MathRand(0.2, 0.5))
-                    particle:SetStartAlpha(MathRandom(150, 220))
-                    particle:SetEndAlpha(0)
-                    local size = MathRandom(2, 5)
-                    particle:SetStartSize(size)
-                    particle:SetEndSize(size + 1)
-                    particle:SetRoll(MathRand(0, math.pi))
-                    particle:SetRollDelta(0)
-                    particle:SetColor(0, 255, 255)
-                end
-            elseif v.InvulnerableEmitter then
-                v.InvulnerableEmitter:Finish()
-                v.InvulnerableEmitter = nil
+        if not v:Alive() or v:IsSpec() then continue end
+
+        if v ~= client and ShouldEmit(v) then
+            if not v.Vindicator_InvEmitter then v.Vindicator_InvEmitter = ParticleEmitter(v:GetPos()) end
+            if not v.Vindicator_InvNextPart then v.Vindicator_InvNextPart = CurTime() end
+            local pos = v:GetPos()
+            -- Use DistToSqr as it's more efficient and this is called very frequently
+            -- 9000000 = 3000^2
+            if v.Vindicator_InvNextPart < CurTime() and client:GetPos():DistToSqr(pos) <= 9000000 then
+                v.Vindicator_InvEmitter:SetPos(pos)
+                v.Vindicator_InvNextPart = CurTime() + MathRand(0.0005, 0.02)
+                local vec = Vector(MathRand(-8, 8), MathRand(-8, 8), MathRand(-25, 25))
+                local particle = v.Vindicator_InvEmitter:Add("particle/wisp.vmt", v:LocalToWorld(vec + Vector(0, 0, 35)))
+                particle:SetVelocity(vec:GetNormalized() * 50)
+                particle:SetDieTime(MathRand(0.2, 0.5))
+                particle:SetStartAlpha(MathRandom(150, 220))
+                particle:SetEndAlpha(0)
+                local size = MathRandom(2, 5)
+                particle:SetStartSize(size)
+                particle:SetEndSize(size + 1)
+                particle:SetRoll(MathRand(0, math.pi))
+                particle:SetRollDelta(0)
+                particle:SetColor(0, 255, 255)
             end
+        elseif v.Vindicator_InvEmitter then
+            v.Vindicator_InvEmitter:Finish()
+            v.Vindicator_InvEmitter = nil
         end
     end
 end

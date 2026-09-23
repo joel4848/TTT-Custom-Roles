@@ -95,7 +95,7 @@ local function ActivateVindicator(vindicator, target)
 end
 
 local function IsWorkingVindicator(ply)
-    return ply:IsRole(ROLE_VINDICATOR) and ply:IsRoleActive() and ply:IsActive() and not ply:IsRoleAbilityDisabled()
+    return ply:IsActiveRole(ROLE_VINDICATOR) and ply:IsRoleActive() and not ply:IsRoleAbilityDisabled()
 end
 
 local function Vindicator_EntityTakeDamage(victim, dmg)
@@ -396,12 +396,12 @@ end)
 ------------------
 
 ROLE_REGISTERED_HOOKS[ROLE_VINDICATOR] = {
-    ["PlayerDeath"]             = Vindicator_PlayerDeath,
-    ["EntityTakeDamage"]        = Vindicator_EntityTakeDamage,
-    ["PlayerDisconnected"]      = Vindicator_PlayerDisconnected,
-    ["TTTCheckForWin"]          = Vindicator_TTTCheckForWin,
-    ["TTTDeathNotifyOverride"]  = Vindicator_TTTDeathNotifyOverride,
-    ["TTTPrintResultMessage"]   = Vindicator_TTTPrintResultMessage,
+    ["PlayerDeath"] = Vindicator_PlayerDeath,
+    ["EntityTakeDamage"] = Vindicator_EntityTakeDamage,
+    ["PlayerDisconnected"] = Vindicator_PlayerDisconnected,
+    ["TTTCheckForWin"] = Vindicator_TTTCheckForWin,
+    ["TTTDeathNotifyOverride"] = Vindicator_TTTDeathNotifyOverride,
+    ["TTTPrintResultMessage"] = Vindicator_TTTPrintResultMessage,
     ["TTTStopPlayerRespawning"] = Vindicator_TTTStopPlayerRespawning,
-    ["TTTWinCheckBlocks"]       = Vindicator_TTTWinCheckBlocks
+    ["TTTWinCheckBlocks"] = Vindicator_TTTWinCheckBlocks
 }
